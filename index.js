@@ -1,12 +1,14 @@
-const exec = require('child_process').exec;
+const exec = require('child_process').execFile;
 
 // function timeDifference(startTimeInMilliSeconds, endTimeInMilliSeconds) {
 //   return formattedTime(timeInMilliSeconds(endTimeInMilliSeconds) - timeInMilliSeconds(startTimeInMilliSeconds));
 // }
 
-function execute(command) {
+const COMMAND = 'ffmpeg';
+
+function execute(args) {
   return new Promise((resolve, reject) => {
-    exec(command, (error, stdout, stderr) => {
+    exec(COMMAND, args, (error, stdout, stderr) => {
       if (error) {
         reject(stderr);
       } else {
@@ -33,7 +35,7 @@ function formattedTime(milliSeconds) {
 
 function clip(inputFilePath, outputFilePath, startTime, endTime) {
   let duration = endTime - startTime;
-  return execute(`ffmpeg -ss ${formattedTime(startTime)} -i ${inputFilePath} -t ${formattedTime(duration)} ${outputFilePath} -y`);
+  return execute(['-ss', formattedTime(startTime), '-i', inputFilePath, '-t', formattedTime(duration), outputFilePath, '-y']);
 }
 
 function split(inputFilePath, outputFilePath, clipPoints) {
@@ -47,11 +49,11 @@ splitQueue.push(clip(inputFilePath, `${ci}-${outputFilePath}`, clipPoints[ci], c
 }
 
 function parseAudio(inputFilePath, outputFilePath) {
-  return execute(`ffmpeg -i ${inputFilePath} -f mp2 ${outputFilePath}`);
+  return execute(['-i', inputFilePath, '-f', 'mp2', outputFilePath]);
 }
 
 function parseAudioLowQuality(inputFilePath, outputFilePath) {
-  return execute(`ffmpeg -i ${inputFilePath} -ac 1 -ab 64000 ${outputFilePath}`);
+  return execute(['-i', inputFilePath, '-ac', '1', '-ab', '64000', outputFilePath]);
 }
 
 module.exports = {
